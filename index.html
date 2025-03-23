@@ -131,7 +131,7 @@
     }
     
     .button-text {
-      font-size: 1rem; /* 텍스트 크기 증가 */
+      font-size: 2rem; /* 텍스트 크기를 2rem으로 설정 */
       font-weight: 500;
       text-align: center;
     }
@@ -228,7 +228,7 @@
       }
 
       .button-text {
-        font-size: 0.9rem; /* 모바일에서 텍스트 크기 증가 */
+        font-size: 1.5rem; /* 모바일에서 텍스트 크기 조정 */
       }
     }
 
@@ -251,7 +251,9 @@
     }
 
     .button-text {
-      font-size: 1.4rem; /* 원래 크기로 복원 */
+      font-size: 2rem; /* 텍스트 크기를 2rem으로 설정 */
+      font-weight: 500;
+      text-align: center;
     }
 
     .button-description {
@@ -273,7 +275,7 @@
       }
 
       .button-text {
-        font-size: 0.7rem; /* 모바일에서 텍스트 크기 조정 */
+        font-size: 1.5rem; /* 모바일에서 텍스트 크기 조정 */
       }
     }
 
@@ -289,7 +291,31 @@
       }
 
       .button-text {
-        font-size: 0.85rem; /* 작은 화면에서 텍스트 크기 증가 */
+        font-size: 1.2rem; /* 작은 화면에서 텍스트 크기 조정 */
+      }
+    }
+
+    .button-text {
+      font-size: 1.2rem; /* 기본 텍스트 크기 */
+      font-weight: 500;
+      text-align: center;
+    }
+
+    @media (min-width: 1025px) {
+      .button-text {
+        font-size: 1.2rem; /* PC 화면에서 텍스트 크기 줄이기 */
+      }
+    }
+
+    @media (max-width: 768px) {
+      .button-text {
+        font-size: 1.5rem; /* 태블릿에서 텍스트 크기 */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .button-text {
+        font-size: 1.2rem; /* 모바일에서 텍스트 크기 */
       }
     }
   </style>
