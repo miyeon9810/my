@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RAMI TEACHER</title>
+  <title>마이디자인</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -26,8 +26,13 @@
       padding: 0;
     }
     
+    @font-face {
+      font-family: 'CustomFont';
+      src: url('on.ttf') format('truetype');
+    }
+
     body {
-      font-family: 'Noto Sans KR', sans-serif;
+      font-family: 'CustomFont', sans-serif; /* 모든 텍스트에 on.ttf 적용 */
       line-height: 1.6;
       color: var(--text-color);
       background: var(--light-gray);
@@ -43,13 +48,13 @@
     }
     
     .logo-container {
-      margin: 20px 0 40px;
+      margin: 10px 0 10px; /* 로고와 소개 사이 간격 조정 */
       position: relative;
       display: inline-block;
     }
     
     .logo {
-      max-width: 240px;
+      max-width: 240px; /* 로고 크기 줄이기 */
       height: auto;
       border-radius: 50%;
       box-shadow: var(--shadow);
@@ -73,13 +78,13 @@
     
     .welcome-section h1 {
       color: var(--primary-color);
-      font-size: 2.5rem;
+      font-size: 3.5rem; /* 기존 2.5rem에서 1rem 증가 */
       margin-bottom: 20px;
       font-weight: 700;
     }
     
     .welcome-section p {
-      font-size: 1.2rem;
+      font-size: 2.2rem; /* 기존 1.2rem에서 1rem 증가 */
       max-width: 700px;
       margin: 0 auto;
       color: var(--text-color);
@@ -144,15 +149,17 @@
     
     .button-text {
       font-weight: 700;
-      font-size: 1.4rem;
+      font-size: 2.4rem; /* 기존 1.4rem에서 1rem 증가 */
       margin-bottom: 10px;
       color: #32325d;
     }
     
     .button-description {
-      font-size: 0.95rem;
+      font-size: 0.95rem; /* 기본 글꼴 크기 */
       opacity: 0.8;
       line-height: 1.5;
+      max-height: calc(1.5em * 2); /* 2줄 높이 제한 */
+      overflow: hidden;
     }
     
     .about-section {
@@ -179,7 +186,7 @@
     
     .about-section h2 {
       color: var(--primary-color);
-      font-size: 2rem;
+      font-size: 3rem; /* 기존 2rem에서 1rem 증가 */
       margin-bottom: 20px;
       position: relative;
       display: inline-block;
@@ -201,24 +208,47 @@
       max-width: 800px;
       margin: 20px auto 0;
       line-height: 1.8;
+      font-size: 1.9rem; /* 기존 0.9rem에서 1rem 증가 */
     }
     
     @media (max-width: 768px) {
       .nav-button {
         width: 100%;
-        max-width: 320px;
+        max-width: 300px; /* 모바일에서 버튼 크기 조정 */
       }
       
       .welcome-section h1 {
-        font-size: 2rem;
+        font-size: 2.8rem; /* 모바일에서 기존 1.8rem에서 1rem 증가 */
       }
       
       .welcome-section p {
-        font-size: 1.1rem;
+        font-size: 2rem; /* 모바일에서 기존 1rem에서 1rem 증가 */
       }
       
       .about-section {
-        padding: 30px 20px;
+        padding: 20px 15px; /* 모바일에서 패딩 조정 */
+      }
+
+      .logo {
+        max-width: 120px; /* 모바일에서 로고 크기 더 줄이기 */
+      }
+      
+      .about-section h2 {
+        font-size: 2.5rem; /* 모바일에서 기존 1.5rem에서 1rem 증가 */
+      }
+      
+      .about-section p {
+        font-size: 1.9rem; /* 모바일에서 기존 0.9rem에서 1rem 증가 */
+      }
+
+      .button-description {
+        font-size: 0.85rem; /* 모바일에서 글꼴 크기 줄이기 */
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .button-description {
+        font-size: 0.9rem; /* 태블릿에서 글꼴 크기 조정 */
       }
     }
 
@@ -226,50 +256,60 @@
       display: inline-block;
       cursor: pointer;
     }
+
+    .welcome-section h1,
+    .welcome-section p,
+    .about-section h2,
+    .about-section p {
+      word-break: keep-all; /* 텍스트 줄 바꿈 자연스럽게 */
+    }
+
+    .button-text {
+      font-size: 1.4rem; /* 원래 크기로 복원 */
+    }
+
+    .button-description {
+      font-size: 0.95rem; /* 원래 크기로 복원 */
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="logo-container">
-        <img src="mee.png" alt="RAMI TEACHER" class="logo">
+        <img src="mee.png" alt="my design" class="logo">
       </a>
     </div>
-    
-    <div class="welcome-section">
-      <h1></h1>
-      <p>일상의 작은 결정부터 행운의 순간까지, 필요한 도구를 한 곳에서 만나보세요!</p>
+    <div class="about-section">
+      <h2> 소개</h2>
+      <p>태블릿과 디지털 콘텐츠를 통해 당신의 하루가 더 편하고 즐거워지길 바랍니다💝</p>
     </div>
     
 
 
     <div class="navigation-buttons">
-      <a href="https://a-bly.com" class="nav-button">
+      <a href="https://applink.a-bly.com/마이디자인" class="nav-button">
         <div class="button-icon">🛍️</div>
         <div class="button-text">에이블리</div>
         <p class="button-description">다양한 상품을 에이블리에서 만나보세요!</p>
       </a>
-      <a href="https://your-own-mall-link.com" class="nav-button">
+      <a href="-" class="nav-button">
         <div class="button-icon">🏬</div>
         <div class="button-text">자사몰</div>
         <p class="button-description">우리 자사몰에서 특별한 상품을 확인하세요.</p>
       </a>
-      <a href="https://instagram.com/your-instagram" class="nav-button">
+      <a href="-" class="nav-button">
         <div class="button-icon">📸</div>
         <div class="button-text">인스타</div>
         <p class="button-description">인스타그램에서 최신 소식을 확인하세요.</p>
       </a>
-      <a href="https://your-blog-link.com" class="nav-button">
+      <a href="https://blog.naver.com/geulnarim" class="nav-button">
         <div class="button-icon">✍️</div>
         <div class="button-text">블로그</div>
         <p class="button-description">블로그에서 다양한 이야기를 만나보세요.</p>
       </a>
     </div>
     
-    <div class="about-section">
-      <h2>RAMI TEACHER 소개</h2>
-      <p>RAMI TEACHER는 일상의 소소한 결정과 재미를 위한 다양한 웹 도구를 제공합니다. 식사 메뉴 선택의 고민을 덜어주는 룰렛부터, 고민에 답해주는 소라고동, 그리고 행운을 시험해볼 수 있는 로또 번호 생성기까지! 더 많은 기능을 계속해서 추가할 예정이니 자주 방문해주세요.</p>
-    </div>
-  </div>
+
 
 </body>
 </html>
