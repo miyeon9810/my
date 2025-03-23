@@ -117,24 +117,26 @@
     .nav-button::before {
       content: '';
       position: absolute;
-      top: 0;
+      top: 100%; /* 초기 위치: 버튼 아래 */
       left: 0;
       width: 100%;
-      height: 6px;
-      background: var(--primary-gradient);
+      height: 100%;
+      background: #ffc0cb; /* 베이비 핑크 색상 */
+      z-index: 0;
+      transition: top 0.3s ease; /* 부드럽게 차오르는 효과 */
+    }
+    
+    .nav-button:hover::before {
+      top: 0; /* 호버 시 버튼 전체를 덮음 */
     }
     
     .nav-button:hover {
-      transform: translateY(-10px);
-      box-shadow: var(--hover-shadow);
+      color: #ffffff; /* 호버 시 텍스트 색상을 흰색으로 변경 */
     }
     
-    .nav-button:nth-child(2)::before {
-      background: linear-gradient(135deg, #11cdef 0%, #1171ef 100%);
-    }
-    
-    .nav-button:nth-child(3)::before {
-      background: linear-gradient(135deg, #f5365c 0%, #fd5d93 100%);
+    .nav-button > * {
+      position: relative;
+      z-index: 1; /* 텍스트와 아이콘이 배경 위에 표시되도록 설정 */
     }
     
     .button-icon {
@@ -281,7 +283,7 @@
     </div>
     <div class="about-section">
       <h2> 소개</h2>
-      <p>태블릿과 디지털 콘텐츠를 통해 당신의 하루가 더 편하고 즐거워지길 바랍니다💝</p>
+      <p>디지털 + 라이프를 더 감각적으로</p>
     </div>
     
 
@@ -290,22 +292,26 @@
       <a href="https://applink.a-bly.com/마이디자인" class="nav-button">
         <div class="button-icon">🛍️</div>
         <div class="button-text">에이블리</div>
-        <p class="button-description">다양한 상품을 에이블리에서 만나보세요!</p>
+        
       </a>
-      <a href="-" class="nav-button">
-        <div class="button-icon">🏬</div>
-        <div class="button-text">자사몰</div>
-        <p class="button-description">우리 자사몰에서 특별한 상품을 확인하세요.</p>
+      <a href="https://shop.coupang.com/modernfara?category=498125&platform=p&brandId=0&source=brandstore_sdp_atf&pid=8284154480&viid=90908216926" class="nav-button">
+        <div class="button-icon">🚀</div>
+        <div class="button-text">쿠팡</div>
+        
       </a>
-      <a href="-" class="nav-button">
+      <a href="https://ctee.kr/place/mydesign/store" class="nav-button">
+        <div class="button-icon">📑</div>
+        <div class="button-text">스티커 다운</div>
+        
+      </a>
+      <a href="https://www.instagram.com/my_designer98" class="nav-button">
         <div class="button-icon">📸</div>
         <div class="button-text">인스타</div>
-        <p class="button-description">인스타그램에서 최신 소식을 확인하세요.</p>
       </a>
       <a href="https://blog.naver.com/geulnarim" class="nav-button">
         <div class="button-icon">✍️</div>
         <div class="button-text">블로그</div>
-        <p class="button-description">블로그에서 다양한 이야기를 만나보세요.</p>
+        
       </a>
     </div>
     
