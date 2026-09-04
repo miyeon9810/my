@@ -1,0 +1,219 @@
+// Prisma schema for the gamified quest/todo app.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------- Auth.js (NextAuth) required models ----------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Game state
+  level                Int       @default(1)
+  xp                   Int       @default(0)
+  totalFocusSeconds    Int       @default(0)
+  currentStreak        Int       @default(0)
+  longestStreak        Int       @default(0)
+  lastQuestCompletedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  accounts         Account[]
+  sessions         Session[]
+  quests           Quest[]
+  focusSessions    FocusSession[]
+  badges           UserBadge[]
+  partyMemberships PartyMember[]
+  clanMemberships  ClanMember[]
+  createdParties   Party[]       @relation("PartyCreator")
+  createdClans     Clan[]        @relation("ClanCreator")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------- Game domain models ----------
+
+// A quest is a gamified todo item. Personal by default, or shared inside a party/clan.
+model Quest {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  difficulty  String    @default("normal") // easy | normal | hard | epic
+  xpReward    Int       @default(10)
+  status      String    @default("active") // active | done | archived
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  partyId String?
+  party   Party? @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  clanId  String?
+  clan    Clan?   @relation(fields: [clanId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  focusSessions FocusSession[]
+
+  @@index([userId, status])
+}
+
+// A party is a small squad formed around one side goal, shared with a handful of people.
+model Party {
+  id          String @id @default(cuid())
+  name        String
+  goal        String?
+  description String?
+  inviteCode  String @unique
+
+  xp    Int @default(0)
+  level Int @default(1)
+
+  createdById String
+  createdBy   User   @relation("PartyCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  members       PartyMember[]
+  quests        Quest[]
+  focusSessions FocusSession[]
+}
+
+model PartyMember {
+  id       String @id @default(cuid())
+  partyId  String
+  party    Party  @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String @default("member") // owner | member
+
+  joinedAt     DateTime @default(now())
+  focusSeconds Int      @default(0)
+
+  @@unique([partyId, userId])
+}
+
+// A clan is a larger, long-term group formed around a big life goal
+// (e.g. civil service exam, landing a job at a big company).
+model Clan {
+  id          String @id @default(cuid())
+  name        String
+  goal        String?
+  description String?
+  inviteCode  String @unique
+
+  xp    Int @default(0)
+  level Int @default(1)
+
+  createdById String
+  createdBy   User   @relation("ClanCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  members       ClanMember[]
+  quests        Quest[]
+  focusSessions FocusSession[]
+}
+
+model ClanMember {
+  id      String @id @default(cuid())
+  clanId  String
+  clan    Clan   @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role    String @default("member") // owner | member
+
+  joinedAt     DateTime @default(now())
+  focusSeconds Int      @default(0)
+
+  @@unique([clanId, userId])
+}
+
+// A focus-timer session. Solo, or attributed to a party/clan so the group's
+// combined focus time feeds party/clan XP and levels.
+model FocusSession {
+  id      String  @id @default(cuid())
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questId String?
+  quest   Quest?  @relation(fields: [questId], references: [id], onDelete: SetNull)
+  partyId String?
+  party   Party?  @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  clanId  String?
+  clan    Clan?   @relation(fields: [clanId], references: [id], onDelete: SetNull)
+
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  durationSeconds Int       @default(0)
+  xpEarned        Int       @default(0)
+
+  @@index([userId])
+}
+
+// Static catalog of badges/achievements. Unlock logic lives in code (lib/achievements.ts)
+// and is keyed off the `code` field.
+model Badge {
+  id          String @id @default(cuid())
+  code        String @unique
+  name        String
+  description String
+  icon        String
+  tier        String @default("bronze") // bronze | silver | gold | legendary
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+}
