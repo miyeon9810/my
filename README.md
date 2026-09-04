@@ -4,5 +4,6 @@
 - `webapp/` — 퀘스트로그: 게임화 투두 앱, Next.js + Prisma 풀스택 버전 (자체 서버/DB 필요)
 - `site/` — 퀘스트로그 정적 버전, Vite + Firebase (Auth + Firestore). GitHub Pages 배포 대상.
   `.github/workflows/deploy-pages.yml`이 이 디렉토리를 빌드해서 Pages로 올린다.
+- `seller-calculator/` — 일인 마켓 셀러용 순이익 계산기. 빌드 없이 `index.html` 하나로 동작하는 정적 웹앱.
 
 각 디렉토리의 README에 설정/실행 방법이 있다.
