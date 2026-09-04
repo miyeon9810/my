@@ -80,9 +80,18 @@ CREATE TABLE checklist_template_versions (
   UNIQUE (template_id, version_no)
 );
 
+-- 실제 체크리스트가 "출근 직후 / 7:45~8:30 / 마감"처럼 시간대·업무 단위로
+-- 묶여 있어서 항목을 버전에 바로 안 붙이고 섹션을 한 단계 끼움
+CREATE TABLE checklist_template_sections (
+  id                    BIGSERIAL PRIMARY KEY,
+  template_version_id   BIGINT NOT NULL REFERENCES checklist_template_versions(id) ON DELETE CASCADE,
+  name                  TEXT NOT NULL, -- 출근 직후, 7:45~8:30, 마감 등
+  sort_order            INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE checklist_template_items (
   id                  BIGSERIAL PRIMARY KEY,
-  template_version_id BIGINT NOT NULL REFERENCES checklist_template_versions(id) ON DELETE CASCADE,
+  section_id          BIGINT NOT NULL REFERENCES checklist_template_sections(id) ON DELETE CASCADE,
   content             TEXT NOT NULL,
   sort_order          INTEGER NOT NULL DEFAULT 0,
   is_required         BOOLEAN NOT NULL DEFAULT true,
@@ -152,6 +161,8 @@ CREATE TABLE checklist_check_logs (
 CREATE INDEX idx_store_members_user ON store_members(user_id);
 CREATE INDEX idx_positions_store ON positions(store_id) WHERE is_active;
 CREATE INDEX idx_templates_position ON checklist_templates(position_id) WHERE is_active;
+CREATE INDEX idx_sections_version ON checklist_template_sections(template_version_id);
+CREATE INDEX idx_items_section ON checklist_template_items(section_id);
 CREATE INDEX idx_assignments_store_date ON staff_assignments(store_id, work_date);
 CREATE INDEX idx_assignments_user_date ON staff_assignments(user_id, work_date);
 CREATE INDEX idx_run_items_run ON checklist_run_items(run_id);
