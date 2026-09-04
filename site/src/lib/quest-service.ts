@@ -20,6 +20,14 @@ import {
   type QuestDifficulty,
 } from "@/lib/leveling";
 import { syncAchievements } from "@/lib/achievements";
+import {
+  guestCompleteQuest,
+  guestCreateQuest,
+  guestDeleteQuest,
+  guestListenUserQuests,
+  isGuestQuestId,
+  isGuestUid,
+} from "@/lib/guest-store";
 import type { Quest } from "@/types/game";
 
 function questsCol() {
@@ -48,6 +56,7 @@ function sortByCreatedDesc(quests: Quest[]) {
 }
 
 export function listenUserQuests(uid: string, onChange: (quests: Quest[]) => void) {
+  if (isGuestUid(uid)) return guestListenUserQuests(onChange);
   const q = query(questsCol(), where("userId", "==", uid));
   return onSnapshot(q, (snap) => {
     onChange(sortByCreatedDesc(snap.docs.map((d) => mapQuest(d.id, d.data()))));
@@ -76,6 +85,7 @@ export async function createQuest(
     clanId?: string | null;
   },
 ) {
+  if (isGuestUid(uid)) return guestCreateQuest(input);
   await addDoc(questsCol(), {
     userId: uid,
     title: input.title,
@@ -92,6 +102,7 @@ export async function createQuest(
 }
 
 export async function deleteQuest(questId: string) {
+  if (isGuestQuestId(questId)) return guestDeleteQuest(questId);
   await deleteDoc(doc(db, "quests", questId));
 }
 
@@ -112,6 +123,7 @@ export class QuestServiceError extends Error {}
 // any), updates the daily streak, then syncs badge unlocks as a follow-up
 // step (kept outside the transaction since it needs count() reads).
 export async function completeQuest(uid: string, questId: string) {
+  if (isGuestUid(uid)) return guestCompleteQuest(questId);
   const questDocRef = doc(db, "quests", questId);
   const userDocRef = userRef(uid);
 

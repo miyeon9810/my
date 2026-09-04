@@ -11,7 +11,7 @@ const NAV_ITEMS = [
 ];
 
 export function NavBar() {
-  const { user, profile, signOut } = useAuth();
+  const { effectiveUser, isGuest, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -37,12 +37,19 @@ export function NavBar() {
           ))}
         </nav>
         <div className="flex shrink-0 items-center gap-3">
+          {isGuest && (
+            <span className="hidden rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-300 ring-1 ring-amber-500/30 sm:inline">
+              게스트 모드
+            </span>
+          )}
           {profile && (
             <span className="hidden sm:flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-violet-300 ring-1 ring-white/10">
               Lv.{userLevelProgress(profile.xp).level}
             </span>
           )}
-          {user?.photoURL && <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full ring-1 ring-white/10" />}
+          {effectiveUser?.photoURL && (
+            <img src={effectiveUser.photoURL} alt="" className="h-7 w-7 rounded-full ring-1 ring-white/10" />
+          )}
           <button
             type="button"
             onClick={async () => {
@@ -51,7 +58,7 @@ export function NavBar() {
             }}
             className="text-xs text-slate-500 hover:text-slate-300"
           >
-            로그아웃
+            {isGuest ? "게스트 종료" : "로그아웃"}
           </button>
         </div>
       </div>

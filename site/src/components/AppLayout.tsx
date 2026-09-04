@@ -4,10 +4,10 @@ import { RewardToastProvider } from "./reward-toast";
 import { NavBar } from "./NavBar";
 
 export function AppLayout() {
-  const { user, loading } = useAuth();
+  const { effectiveUser, loading } = useAuth();
 
   if (loading) return null;
-  if (!user) return <Navigate to="/" replace />;
+  if (!effectiveUser) return <Navigate to="/" replace />;
 
   return (
     <RewardToastProvider>
