@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Paste this into Firebase Console → Firestore Database → Rules, or deploy
+// with `firebase deploy --only firestore:rules` if you use the Firebase CLI.
+//
+// Trust model: this is a small hobby app with no backend, so XP/level
+// numbers and group membership are written directly by clients inside
+// Firestore transactions. Any signed-in member of a party/clan can bump its
+// xp field (that's how quest completions and focus sessions add up) — a
+// motivated cheater could inflate their own numbers. There is no server to
+// validate against, so this is an accepted trade-off, not an oversight.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMember(kind, groupId) {
+      return groupId != null &&
+        exists(/databases/$(database)/documents/$(kind)/$(groupId)/members/$(request.auth.uid));
+    }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /quests/{questId} {
+      allow get: if signedIn() &&
+        (resource.data.userId == request.auth.uid ||
+         isMember('parties', resource.data.partyId) ||
+         isMember('clans', resource.data.clanId));
+      allow list: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid &&
+        (request.resource.data.partyId == null || isMember('parties', request.resource.data.partyId)) &&
+        (request.resource.data.clanId == null || isMember('clans', request.resource.data.clanId));
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /focusSessions/{sessionId} {
+      allow get, list: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /parties/{partyId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if signedIn() && isMember('parties', partyId);
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.auth.uid == memberId;
+        allow update, delete: if signedIn() && request.auth.uid == memberId;
+      }
+    }
+
+    match /clans/{clanId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if signedIn() && isMember('clans', clanId);
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.auth.uid == memberId;
+        allow update, delete: if signedIn() && request.auth.uid == memberId;
+      }
+    }
+  }
+}
