@@ -102,6 +102,11 @@
     font-family:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;
   }
   .toggle-row button.active{background:#fff;color:var(--primary);box-shadow:0 2px 4px rgba(50,50,93,.1);}
+  .toggle-row.small button{padding:7px 0;font-size:12px;}
+
+  .input-wrap input[readonly]{background:var(--bg);color:var(--primary);}
+  .sub-card{background:var(--bg);border-radius:14px;padding:14px;margin-bottom:14px;}
+  .sub-card .field{margin-bottom:10px;}
 
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px;}
   .stat{
@@ -180,6 +185,43 @@
     <div class="toggle-row">
       <button id="modeForward" class="active">판매가 → 순이익</button>
       <button id="modeReverse">목표 마진율 → 판매가</button>
+    </div>
+
+    <div class="toggle-row small">
+      <button id="costModeDirect" class="active">사입가 직접입력</button>
+      <button id="costModeImport">1688·배대지·통관 계산</button>
+    </div>
+
+    <div class="sub-card" id="importCostCard" style="display:none;">
+      <div class="field">
+        <label>1688 금액</label>
+        <div class="input-wrap">
+          <input type="text" inputmode="numeric" id="cnyAmount" placeholder="0">
+          <span class="unit">위안(¥)</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>적용 환율 <span class="hint">그날 환율로 직접 확인 후 입력</span></label>
+        <div class="input-wrap">
+          <input type="number" inputmode="decimal" id="exchangeRate" placeholder="예: 195" step="0.1">
+          <span class="unit">원/¥</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>배대지 비용</label>
+        <div class="input-wrap">
+          <input type="text" inputmode="numeric" id="forwarding" placeholder="0">
+          <span class="unit">원</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>통관비용 <span class="hint">관세·부가세 등</span></label>
+        <div class="input-wrap">
+          <input type="text" inputmode="numeric" id="customs" placeholder="0">
+          <span class="unit">원</span>
+        </div>
+      </div>
+      <p class="note">위안화 금액 × 환율 + 배대지 비용 + 통관비용 = 사입가로 자동 반영됨</p>
     </div>
 
     <div class="field">
@@ -291,9 +333,12 @@ const $ = (id) => document.getElementById(id);
 const els = {
   cost: $('cost'), price: $('price'), fee: $('fee'), shipping: $('shipping'),
   etc: $('etc'), qty: $('qty'), targetMargin: $('targetMargin'),
+  cnyAmount: $('cnyAmount'), exchangeRate: $('exchangeRate'),
+  forwarding: $('forwarding'), customs: $('customs'),
 };
 
 let mode = 'forward';
+let costMode = 'direct';
 let activePlatform = '직접입력';
 
 function toNumber(str) {
@@ -343,6 +388,31 @@ function setMode(m) {
 });
 els.fee.addEventListener('input', calc);
 els.targetMargin.addEventListener('input', calc);
+
+// 사입가 계산 방식 (직접입력 / 1688·배대지·통관)
+$('costModeDirect').addEventListener('click', () => setCostMode('direct'));
+$('costModeImport').addEventListener('click', () => setCostMode('import'));
+function setCostMode(m) {
+  costMode = m;
+  $('costModeDirect').classList.toggle('active', m === 'direct');
+  $('costModeImport').classList.toggle('active', m === 'import');
+  $('importCostCard').style.display = m === 'import' ? '' : 'none';
+  els.cost.readOnly = m === 'import';
+  if (m === 'import') updateImportCost();
+  calc();
+}
+function updateImportCost() {
+  const cny = toNumber(els.cnyAmount.value);
+  const rate = toNumber(els.exchangeRate.value);
+  const fwd = toNumber(els.forwarding.value);
+  const cus = toNumber(els.customs.value);
+  const total = cny * rate + fwd + cus;
+  els.cost.value = total ? Math.round(total).toLocaleString('ko-KR') : '';
+}
+['cnyAmount', 'forwarding', 'customs'].forEach(id => {
+  els[id].addEventListener('input', () => { formatInputNumber(els[id]); updateImportCost(); calc(); });
+});
+els.exchangeRate.addEventListener('input', () => { updateImportCost(); calc(); });
 
 function currentInputs() {
   return {
@@ -448,7 +518,16 @@ function loadItem(item) {
   setMode('forward');
   activePlatform = item.platform;
   document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.textContent === item.platform));
-  els.cost.value = item.cost.toLocaleString('ko-KR');
+  if (item.costMode === 'import') {
+    els.cnyAmount.value = (item.cnyAmount || 0).toLocaleString('ko-KR');
+    els.exchangeRate.value = item.exchangeRate || '';
+    els.forwarding.value = (item.forwarding || 0).toLocaleString('ko-KR');
+    els.customs.value = (item.customs || 0).toLocaleString('ko-KR');
+    setCostMode('import');
+  } else {
+    setCostMode('direct');
+    els.cost.value = item.cost.toLocaleString('ko-KR');
+  }
   els.price.value = item.price.toLocaleString('ko-KR');
   els.fee.value = item.fee;
   els.shipping.value = item.shipping.toLocaleString('ko-KR');
@@ -471,6 +550,11 @@ function saveCurrent() {
     price: Math.round(result.price),
     profit: Math.round(result.profitPerUnit),
     margin: result.marginRate,
+    costMode,
+    cnyAmount: toNumber(els.cnyAmount.value),
+    exchangeRate: toNumber(els.exchangeRate.value),
+    forwarding: toNumber(els.forwarding.value),
+    customs: toNumber(els.customs.value),
   });
   persistSaved(items);
   $('itemName').value = '';
