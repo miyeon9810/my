@@ -17,6 +17,14 @@ import { userRef } from "@/lib/user-service";
 import { userLevelProgress, xpForFocusSeconds } from "@/lib/leveling";
 import { syncAchievements } from "@/lib/achievements";
 import { addGroupFocus, type GroupKind } from "@/lib/group-service";
+import {
+  guestListenActiveSession,
+  guestListenRecentSessions,
+  guestStartFocusSession,
+  guestStopFocusSession,
+  isGuestSessionId,
+  isGuestUid,
+} from "@/lib/guest-store";
 import type { FocusSession } from "@/types/game";
 
 function sessionsCol() {
@@ -40,6 +48,7 @@ function mapSession(id: string, data: DocumentData): FocusSession {
 }
 
 export function listenActiveSession(uid: string, onChange: (session: FocusSession | null) => void) {
+  if (isGuestUid(uid)) return guestListenActiveSession(onChange);
   const q = query(sessionsCol(), where("userId", "==", uid), where("endedAt", "==", null));
   return onSnapshot(q, (snap) => {
     onChange(snap.empty ? null : mapSession(snap.docs[0].id, snap.docs[0].data()));
@@ -47,6 +56,7 @@ export function listenActiveSession(uid: string, onChange: (session: FocusSessio
 }
 
 export function listenRecentSessions(uid: string, onChange: (sessions: FocusSession[]) => void) {
+  if (isGuestUid(uid)) return guestListenRecentSessions(onChange);
   const q = query(sessionsCol(), where("userId", "==", uid));
   return onSnapshot(q, (snap) => {
     const sessions = snap.docs
@@ -62,6 +72,7 @@ export async function startFocusSession(
   uid: string,
   input: { questId?: string | null; partyId?: string | null; clanId?: string | null },
 ) {
+  if (isGuestUid(uid)) return guestStartFocusSession();
   const activeQuery = query(sessionsCol(), where("userId", "==", uid), where("endedAt", "==", null));
   const activeSnap = await getDocs(activeQuery);
   if (!activeSnap.empty) throw new FocusServiceError("이미 진행 중인 타이머가 있어. 먼저 종료해줘.");
@@ -80,6 +91,7 @@ export async function startFocusSession(
 }
 
 export async function stopFocusSession(uid: string, sessionId: string) {
+  if (isGuestUid(uid) || isGuestSessionId(sessionId)) return guestStopFocusSession(sessionId);
   const sessionDocRef = doc(db, "focusSessions", sessionId);
   const userDocRef = userRef(uid);
 

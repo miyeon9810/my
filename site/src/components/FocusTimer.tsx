@@ -21,7 +21,7 @@ export function FocusTimer({
   clanId?: string;
   groups?: { parties: Group[]; clans: Group[] };
 }) {
-  const { user } = useAuth();
+  const { effectiveUser: user } = useAuth();
   const [active, setActive] = useState<FocusSession | null>(null);
   const [recent, setRecent] = useState<FocusSession[]>([]);
   const [elapsed, setElapsed] = useState(0);

@@ -8,7 +8,7 @@ import { NewQuestForm } from "./NewQuestForm";
 import { useRewardToast } from "./reward-toast";
 
 export function QuestBoard({ partyId, clanId }: { partyId?: string; clanId?: string }) {
-  const { user } = useAuth();
+  const { effectiveUser: user } = useAuth();
   const [quests, setQuests] = useState<Quest[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const showReward = useRewardToast();

@@ -6,6 +6,7 @@ import { createGroup, fetchGroupsByIds, joinGroupByCode, type GroupKind } from "
 import { partyLevelProgress, clanLevelProgress } from "@/lib/leveling";
 import type { Group } from "@/types/game";
 import { LevelBar } from "./LevelBar";
+import { GuestBlocked } from "./GuestBlocked";
 
 export function GroupList({
   kind,
@@ -18,7 +19,7 @@ export function GroupList({
   emoji: string;
   description: string;
 }) {
-  const { user, profile } = useAuth();
+  const { user, isGuest, profile } = useAuth();
   const ids = kind === "party" ? profile?.partyIds ?? [] : profile?.clanIds ?? [];
   const [groups, setGroups] = useState<Group[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -71,6 +72,20 @@ export function GroupList({
     } finally {
       setBusy(false);
     }
+  }
+
+  if (isGuest) {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-lg font-semibold text-slate-100">
+            {emoji} {title}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">{description}</p>
+        </div>
+        <GuestBlocked feature={kind === "party" ? "파티는" : "클랜은"} />
+      </div>
+    );
   }
 
   return (
