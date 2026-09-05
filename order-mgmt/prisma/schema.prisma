@@ -1,0 +1,55 @@
+// Prisma schema for the offline-store order management MVP.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// A supplier/거래처. Scheduled vendors have fixed order/delivery weekdays;
+// ad-hoc vendors (수시 발주) ignore weekdays and are always checked.
+model Vendor {
+  id           String @id @default(cuid())
+  name         String
+  isAdhoc      Boolean @default(false)
+  orderDays    String  @default("") // comma-separated weekday codes, e.g. "TUE,THU"
+  deliveryDays String  @default("")
+  sortOrder    Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  items       Item[]
+  orderChecks OrderCheck[]
+}
+
+// A stocked product belonging to one vendor.
+model Item {
+  id             String    @id @default(cuid())
+  vendorId       String
+  vendor         Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name           String
+  safetyStock    Int       @default(0)
+  currentStock   Int       @default(0)
+  stockUpdatedAt DateTime?
+  sortOrder      Int       @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
+}
+
+// Tracks the "발주 완료" checkbox per vendor per calendar day (Asia/Seoul, YYYY-MM-DD).
+model OrderCheck {
+  id          String    @id @default(cuid())
+  vendorId    String
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  date        String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  @@unique([vendorId, date])
+}
