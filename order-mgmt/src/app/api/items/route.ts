@@ -16,8 +16,12 @@ export async function POST(request: NextRequest) {
     data: {
       vendorId: data.vendorId,
       name: data.name,
+      zone: data.zone,
+      inputType: data.inputType,
       safetyStock: data.safetyStock,
-      currentStock: data.currentStock,
+      currentStock: 0,
+      statusHint: data.statusHint,
+      statusValue: "OK",
       stockUpdatedAt: new Date(),
       sortOrder: count,
     },

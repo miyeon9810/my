@@ -1,4 +1,4 @@
-// Prisma schema for the offline-store order management MVP.
+// Prisma schema for 오늘의매장 — offline store (cafe) order/stock management.
 // Learn more: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -11,45 +11,60 @@ datasource db {
 }
 
 // A supplier/거래처. Scheduled vendors have fixed order/delivery weekdays;
-// ad-hoc vendors (수시 발주) ignore weekdays and are always checked.
+// ad-hoc vendors (수시 발주) ignore weekdays entirely.
 model Vendor {
-  id           String @id @default(cuid())
+  id           String  @id @default(cuid())
   name         String
   isAdhoc      Boolean @default(false)
   orderDays    String  @default("") // comma-separated weekday codes, e.g. "TUE,THU"
   deliveryDays String  @default("")
+  note         String  @default("") // 주문 특이사항 (자유 입력)
+  cardImage    String? // 디지털 명함 이미지 (data URL)
   sortOrder    Int     @default(0)
 
   createdAt DateTime @default(now())
 
-  items       Item[]
-  orderChecks OrderCheck[]
+  items Item[]
 }
 
-// A stocked product belonging to one vendor.
+// A stocked product belonging to one vendor. Two input styles:
+// - NUMERIC: a counted item (요거트파우더, 카페시럽 ...) — tracked against safetyStock.
+// - STATUS: a judged-by-feel item (초코소스, 건대추 ...) — tracked as 남음/부족 with a hint line.
 model Item {
-  id             String    @id @default(cuid())
-  vendorId       String
-  vendor         Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  name           String
-  safetyStock    Int       @default(0)
-  currentStock   Int       @default(0)
+  id       String @id @default(cuid())
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name     String
+  zone     String? // "HALL" | "KITCHEN"
+
+  inputType String @default("NUMERIC") // "NUMERIC" | "STATUS"
+
+  // NUMERIC
+  safetyStock  Int @default(0)
+  currentStock Int @default(0)
+
+  // STATUS
+  statusHint  String @default("") // 안내문구, e.g. "마지막 1통 뜯으면"
+  statusValue String @default("OK") // "OK" | "LOW"
+
   stockUpdatedAt DateTime?
   sortOrder      Int       @default(0)
 
   createdAt DateTime @default(now())
 
+  orderChecks ItemOrderCheck[]
+
   @@index([vendorId])
 }
 
-// Tracks the "발주 완료" checkbox per vendor per calendar day (Asia/Seoul, YYYY-MM-DD).
-model OrderCheck {
+// Tracks the "발주 완료" checkbox per item per calendar day (Asia/Seoul, YYYY-MM-DD).
+model ItemOrderCheck {
   id          String    @id @default(cuid())
-  vendorId    String
-  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
   date        String
   completed   Boolean   @default(false)
   completedAt DateTime?
 
-  @@unique([vendorId, date])
+  @@unique([itemId, date])
 }

@@ -9,7 +9,7 @@ export default async function EmployeePage() {
 
   return (
     <>
-      <NavBar title="발주 관리 · 직원" />
+      <NavBar title="재고 입력" />
       <EmployeeBoard />
     </>
   );

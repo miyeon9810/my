@@ -61,3 +61,12 @@ export function formatDayCodesKo(value: string): string {
   if (codes.length === 0) return "-";
   return codes.map((c) => WEEKDAY_LABEL_KO[c]).join("/");
 }
+
+/** Whether today is one of a vendor's regular order days. Ad-hoc vendors have no such day. */
+export function isVendorDueToday(
+  vendor: { isAdhoc: boolean; orderDays: string },
+  date: Date = new Date(),
+): boolean {
+  if (vendor.isAdhoc) return false;
+  return parseDayCodes(vendor.orderDays).includes(todayWeekdayCode(date));
+}

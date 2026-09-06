@@ -10,10 +10,10 @@ export default async function OwnerItemsPage() {
 
   return (
     <>
-      <NavBar title="발주 관리 · 품목/거래처" />
+      <NavBar title="품목 · 거래처 관리" />
       <div className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
-        <Link href="/owner" className="text-sm text-blue-600 hover:underline">
-          ← 발주 체크리스트로
+        <Link href="/owner" className="text-sm font-semibold text-stone-600 underline">
+          ← 발주 확인으로
         </Link>
       </div>
       <VendorItemsManager />

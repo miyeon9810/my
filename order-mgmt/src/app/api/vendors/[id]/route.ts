@@ -17,6 +17,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         isAdhoc: data.isAdhoc,
         orderDays: data.orderDays?.join(","),
         deliveryDays: data.deliveryDays?.join(","),
+        note: data.note,
+        cardImage: data.cardImage,
         sortOrder: data.sortOrder,
       },
     })

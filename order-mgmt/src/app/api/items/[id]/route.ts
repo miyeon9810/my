@@ -8,15 +8,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const parsed = updateItemSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return zodErrorResponse(parsed.error);
   const data = parsed.data;
+  const touchesStock = data.currentStock !== undefined || data.statusValue !== undefined;
 
   const item = await prisma.item
     .update({
       where: { id },
       data: {
         name: data.name,
+        zone: data.zone,
         safetyStock: data.safetyStock,
         currentStock: data.currentStock,
-        stockUpdatedAt: data.currentStock !== undefined ? new Date() : undefined,
+        statusHint: data.statusHint,
+        statusValue: data.statusValue,
+        stockUpdatedAt: touchesStock ? new Date() : undefined,
       },
     })
     .catch(() => null);

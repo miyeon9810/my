@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
       isAdhoc: data.isAdhoc,
       orderDays: data.orderDays.join(","),
       deliveryDays: data.deliveryDays.join(","),
+      note: data.note,
+      cardImage: data.cardImage,
       sortOrder: count,
     },
   });
