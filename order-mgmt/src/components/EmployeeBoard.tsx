@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useSWR, { type KeyedMutator } from "swr";
 import { fetcher, patchJson } from "@/lib/fetcher";
 import { ZONE_LABEL_KO, type ItemDto, type StatusValue, type VendorDto } from "@/lib/types";
@@ -11,13 +11,19 @@ function ZoneTag({ zone }: { zone: ItemDto["zone"] }) {
   return <span className="rounded border border-stone-300 px-1.5 py-0.5 text-xs text-stone-500">{ZONE_LABEL_KO[zone]}</span>;
 }
 
-function NumericRow({ item }: { item: ItemDto }) {
+function NumericRow({ item, onChanged }: { item: ItemDto; onChanged: () => Promise<unknown> }) {
   const [saved, setSaved] = useState(false);
+  // Last value persisted from this row. The SWR item can be stale between saves,
+  // so comparing against item.currentStock would skip a change back to the old value.
+  const lastSaved = useRef(item.currentStock);
 
-  const save = async (raw: string) => {
-    const value = Math.max(0, Number.parseInt(raw, 10) || 0);
-    if (value === item.currentStock) return;
+  const save = async (input: HTMLInputElement) => {
+    const value = Math.max(0, Number.parseInt(input.value, 10) || 0);
+    input.value = String(value);
+    if (value === lastSaved.current) return;
+    lastSaved.current = value;
     await patchJson(`/api/items/${item.id}`, { currentStock: value });
+    await onChanged();
     setSaved(true);
     setTimeout(() => setSaved(false), 1400);
   };
@@ -35,7 +41,7 @@ function NumericRow({ item }: { item: ItemDto }) {
           min={0}
           inputMode="numeric"
           defaultValue={item.currentStock}
-          onBlur={(e) => save(e.target.value)}
+          onBlur={(e) => save(e.currentTarget)}
           className="w-20 rounded-md border-2 border-stone-300 px-3 py-2 text-right text-lg font-semibold"
         />
       </div>
@@ -112,7 +118,7 @@ function VendorSection({ vendor, onChanged }: { vendor: VendorDto; onChanged: Ke
             item.inputType === "STATUS" ? (
               <StatusRow key={item.id} item={item} onChanged={() => onChanged()} />
             ) : (
-              <NumericRow key={item.id} item={item} />
+              <NumericRow key={item.id} item={item} onChanged={() => onChanged()} />
             ),
           )}
         </ul>
